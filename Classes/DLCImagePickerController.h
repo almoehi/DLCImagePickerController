@@ -32,6 +32,8 @@
 @property (nonatomic, weak) id <DLCImagePickerDelegate> delegate;
 @property (nonatomic, weak) IBOutlet UIButton *photoCaptureButton;
 @property (nonatomic, weak) IBOutlet UIButton *cancelButton;
+@property (nonatomic, weak) UIPopoverController *popover;
+
 
 @property (nonatomic, weak) IBOutlet UIButton *cameraToggleButton;
 @property (nonatomic, weak) IBOutlet UIButton *blurToggleButton;

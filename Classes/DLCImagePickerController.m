@@ -19,6 +19,7 @@
 
 @synthesize delegate,
     imageView,
+    popover,
     cameraToggleButton,
     photoCaptureButton,
     blurToggleButton,
@@ -299,7 +300,19 @@
     imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
     imagePickerController.delegate = self;
     imagePickerController.allowsEditing = YES;
-    [self presentViewController:imagePickerController animated:YES completion:NULL];
+    
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        // iPad needs popover
+        self.popover = [[UIPopoverController alloc] initWithContentViewController:imagePickerController];
+        self.popover.delegate = self;
+        CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+        CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+        [self.popover presentPopoverFromRect:CGRectZero inView:self.view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+        [self.popover setPopoverContentSize:CGSizeMake(screenWidth, screenHeight) animated:TRUE];
+    } else {
+        
+        [self presentViewController:imagePickerController animated:YES completion:NULL];
+    }
 }
 
 -(IBAction)toggleFlash:(UIButton *)button{
@@ -666,7 +679,14 @@
         staticPicture = [[GPUImagePicture alloc] initWithImage:outputImage smoothlyScaleOutput:YES];
         staticPictureOriginalOrientation = outputImage.imageOrientation;
         isStatic = YES;
-        [self dismissViewControllerAnimated:YES completion:nil];
+        
+        // we're on iPad - need to dismiss the popover instead
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+            [self.popover dismissPopoverAnimated:TRUE];
+        } else {
+            [self dismissViewControllerAnimated:YES completion:nil];
+        }
+        
         [self.cameraToggleButton setEnabled:NO];
         [self.flashToggleButton setEnabled:NO];
         [self prepareStaticFilter];
@@ -682,8 +702,13 @@
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     if (isStatic) {
-        // TODO: fix this hack
-        [self dismissViewControllerAnimated:NO completion:nil];
+        // we're on iPad - need to dismiss the popover instead
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+            [self.popover dismissPopoverAnimated:TRUE];
+        } else {
+            [self dismissViewControllerAnimated:YES completion:nil];
+        }
+        
         [self.delegate imagePickerControllerDidCancel:self];
     } else {
         [self dismissViewControllerAnimated:YES completion:nil];
